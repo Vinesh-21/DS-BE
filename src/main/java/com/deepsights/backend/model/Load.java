@@ -23,7 +23,4 @@ public class Load {
     private String  gatewayId;
     private String loadName;
     private LoadType loadType;
-    private Double power;
-    private Double voltage;
-    private Double current;
 }

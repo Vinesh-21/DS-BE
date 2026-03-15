@@ -20,7 +20,7 @@ public class Gateway {
 
     @Id
     private String  id;
-    private String name;
+    private String gatewayName;
     @Indexed
     private String  siteId;
     private GatewayStatus status;
