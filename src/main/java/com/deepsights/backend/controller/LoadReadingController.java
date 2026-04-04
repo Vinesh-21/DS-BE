@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/v1/load-readings")
 @RequiredArgsConstructor
@@ -18,7 +18,13 @@ public class LoadReadingController {
 
     @GetMapping("/load/{loadId}")
     public Flux<LoadReading> getReadingsByLoad(@PathVariable String loadId) {
-        return loadReadingService.getReadingsByLoadId(loadId);
+        long start = System.currentTimeMillis();
+
+        return loadReadingService.getReadingsByLoadId(loadId).doOnComplete(() -> {
+            long end = System.currentTimeMillis();
+            System.out.println(loadId);
+            System.out.println("Load Time taken: " + (end - start) + " ms");
+        });
     }
 
     @PostMapping

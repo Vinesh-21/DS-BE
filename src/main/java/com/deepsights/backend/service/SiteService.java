@@ -1,5 +1,8 @@
 package com.deepsights.backend.service;
 
+import com.deepsights.backend.dto.SiteUpdateDTO;
+import com.deepsights.backend.exception.DuplicateException;
+import com.deepsights.backend.exception.NotFoundException;
 import com.deepsights.backend.model.Site;
 import com.deepsights.backend.repository.SiteRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,24 +21,39 @@ public class SiteService {
         return siteRepository.findAll();
     }
 
-    public Mono<Site> getSiteById(String id) {
-        return siteRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Site not found")));
+    public Mono<Site> getSiteBySiteId(String id) {
+        return siteRepository.findBySiteId(id)
+                .switchIfEmpty(Mono.error(new NotFoundException("Site not found")));
     }
 
     public Mono<Site> createSite(Site site) {
-        return siteRepository.save(site);
+
+        return siteRepository.existsBySiteId(site.getSiteId()).flatMap((exists)->{
+            if(exists){
+                return Mono.error(new DuplicateException("Duplicate SiteId"));
+            }
+
+            return siteRepository.save(site);
+        });
     }
 
-    public Mono<Site> updateSite(String id, Site updatedSite) {
+    public Mono<Site> updateSite(String id, SiteUpdateDTO updatedSiteDTO) {
 
-        return siteRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Site not found")))
+        return siteRepository.findBySiteId(id)
+                .switchIfEmpty(Mono.error(new NotFoundException("Site not found")))
                 .flatMap(existingSite -> {
 
-                    existingSite.setSiteName(updatedSite.getSiteName());
-                    existingSite.setSiteLocation(updatedSite.getSiteLocation());
-                    existingSite.setActive(updatedSite.getActive());
+                    if (updatedSiteDTO.getSiteName() != null) {
+                        existingSite.setSiteName(updatedSiteDTO.getSiteName());
+                    }
+
+                    if (updatedSiteDTO.getSiteLocation() != null) {
+                        existingSite.setSiteLocation(updatedSiteDTO.getSiteLocation());
+                    }
+
+                    if (updatedSiteDTO.getActive() != null) {
+                        existingSite.setActive(updatedSiteDTO.getActive());
+                    }
 
                     return siteRepository.save(existingSite);
                 });
@@ -43,9 +61,9 @@ public class SiteService {
 
     public Mono<String> deleteSite(String id) {
 
-        return siteRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Site not found")))
-                .flatMap(site -> siteRepository.deleteById(id))
+        return siteRepository.findBySiteId(id)
+                .switchIfEmpty(Mono.error(new NotFoundException("Site not found")))
+                .flatMap(site -> siteRepository.deleteBySiteId(id))
                 .thenReturn("Site Deleted Successfully");
     }
 }

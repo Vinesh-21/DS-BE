@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/v1/meters")
 @RequiredArgsConstructor
@@ -26,16 +26,16 @@ public class MeterController {
         return meterService.createMeter(meter);
     }
 
-    @PutMapping("/{id}")
-    public Mono<Meter> updateMeter(@PathVariable String id,
+    @PutMapping("/{meterId}")
+    public Mono<Meter> updateMeter(@PathVariable String meterId,
                                    @RequestBody Meter meter) {
-        return meterService.updateMeter(id, meter);
+        return meterService.updateMeter(meterId, meter);
     }
 
-    @DeleteMapping("/{id}")
-    public Mono<Map<String,String>> deleteMeter(@PathVariable String id) {
+    @DeleteMapping("/{meterId}")
+    public Mono<Map<String,String>> deleteMeter(@PathVariable String meterId) {
 
-        return meterService.deleteMeter(id)
+        return meterService.deleteMeter(meterId)
                 .map(msg -> Map.of("message", msg));
     }
 }

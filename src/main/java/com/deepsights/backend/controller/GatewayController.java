@@ -1,5 +1,6 @@
 package com.deepsights.backend.controller;
 
+import com.deepsights.backend.dto.GatewayUpdateDTO;
 import com.deepsights.backend.model.Gateway;
 import com.deepsights.backend.service.GatewayService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/v1/gateways")
 @RequiredArgsConstructor
@@ -21,9 +23,9 @@ public class GatewayController {
         return gatewayService.getAllGateways();
     }
 
-    @GetMapping("/{id}")
-    public Mono<Gateway> getGatewayById(@PathVariable String id) {
-        return gatewayService.getGatewayById(id);
+    @GetMapping("/{gatewayId}")
+    public Mono<Gateway> getGatewayById(@PathVariable String gatewayId) {
+        return gatewayService.getGatewayById(gatewayId);
     }
 
     @GetMapping("/site/{siteId}")
@@ -36,16 +38,15 @@ public class GatewayController {
         return gatewayService.createGateway(gateway);
     }
 
-    @PutMapping("/{id}")
-    public Mono<Gateway> updateGateway(@PathVariable String id,
-                                       @RequestBody Gateway gateway) {
-        return gatewayService.updateGateway(id, gateway);
+    @PatchMapping("/{gatewayId}")
+    public Mono<Gateway> updateGateway(@PathVariable String gatewayId,
+                                       @RequestBody GatewayUpdateDTO gateway) {
+        return gatewayService.updateGateway(gatewayId, gateway);
     }
 
-    @DeleteMapping("/{id}")
-    public Mono<Map<String,String>> deleteGateway(@PathVariable String id) {
-
-        return gatewayService.deleteGateway(id)
+    @DeleteMapping("/{gatewayId}")
+    public Mono<Map<String,String>> deleteGateway(@PathVariable String gatewayId) {
+        return gatewayService.deleteGateway(gatewayId)
                 .map(message -> Map.of("message", message));
     }
 }

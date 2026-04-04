@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/v1/loads")
 @RequiredArgsConstructor
@@ -27,16 +27,16 @@ public class LoadController {
         return loadService.createLoad(load);
     }
 
-    @PutMapping("/{id}")
-    public Mono<Load> updateLoad(@PathVariable String id,
+    @PutMapping("/{loadId}")
+    public Mono<Load> updateLoad(@PathVariable String loadId,
                                  @RequestBody Load load) {
-        return loadService.updateLoad(id, load);
+        return loadService.updateLoad(loadId, load);
     }
 
-    @DeleteMapping("/{id}")
-    public Mono<Map<String,String>> deleteLoad(@PathVariable String id) {
+    @DeleteMapping("/{loadId}")
+    public Mono<Map<String,String>> deleteLoad(@PathVariable String loadId) {
 
-        return loadService.deleteLoad(id)
+        return loadService.deleteLoad(loadId)
                 .map(message -> Map.of("message", message));
     }
 }

@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/v1/meter-readings")
 @RequiredArgsConstructor
@@ -18,7 +18,13 @@ public class MeterReadingController {
 
     @GetMapping("/meter/{meterId}")
     public Flux<MeterReading> getReadingsByMeter(@PathVariable String meterId) {
-        return meterReadingService.getReadingsByMeterId(meterId);
+        long start = System.currentTimeMillis();
+
+        return meterReadingService.getReadingsByMeterId(meterId).doOnComplete(() -> {
+            long end = System.currentTimeMillis();
+            System.out.println(meterId);
+            System.out.println("Meter Time taken: " + (end - start) + " ms");
+        });
     }
 
     @PostMapping

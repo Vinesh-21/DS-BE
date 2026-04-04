@@ -1,5 +1,6 @@
 package com.deepsights.backend.service;
 
+import com.deepsights.backend.exception.DuplicateException;
 import com.deepsights.backend.model.Meter;
 import com.deepsights.backend.repository.MeterRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,26 +20,35 @@ public class MeterService {
     }
 
     public Mono<Meter> createMeter(Meter meter) {
-        return meterRepository.save(meter);
+
+        return meterRepository.existsByMeterId(meter.getMeterId())
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(new DuplicateException("MeterId already exists"));
+                    }
+                    return meterRepository.save(meter);
+                });
     }
 
-    public Mono<Meter> updateMeter(String id, Meter meter) {
 
-        return meterRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Meter Not Found")))
+    public Mono<Meter> updateMeter(String meterId, Meter meter) {
+
+        return meterRepository.findByMeterId(meterId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Meter not found")))
                 .flatMap(existing -> {
 
                     existing.setMeterName(meter.getMeterName());
                     existing.setMeterType(meter.getMeterType());
+                    existing.setGatewayId(meter.getGatewayId());
 
                     return meterRepository.save(existing);
                 });
     }
 
-    public Mono<String> deleteMeter(String id) {
+    public Mono<String> deleteMeter(String meterId) {
 
-        return meterRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Meter Not Found")))
+        return meterRepository.findByMeterId(meterId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Meter not found")))
                 .flatMap(meterRepository::delete)
                 .thenReturn("Meter Deleted Successfully");
     }

@@ -1,6 +1,8 @@
 package com.deepsights.backend.service;
 
 
+import com.deepsights.backend.exception.DuplicateException;
+import com.deepsights.backend.exception.NotFoundException;
 import com.deepsights.backend.model.Load;
 import com.deepsights.backend.repository.LoadRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,35 +16,40 @@ import reactor.core.publisher.Mono;
 public class LoadService {
 
     private final LoadRepository loadRepository;
-
+    private final GatewayService gatewayService;
     public Flux<Load> getLoadsByGatewayId(String gatewayId) {
         return loadRepository.findByGatewayId(gatewayId)
-                .switchIfEmpty(Flux.error(new RuntimeException("Load Not Found")));
+                .switchIfEmpty(Flux.error(new NotFoundException("GatewayId Not Found")));
     }
 
     public Mono<Load> createLoad(Load load) {
-        return loadRepository.save(load);
+
+        return loadRepository.existsByLoadId(load.getLoadId())
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(new DuplicateException("LoadId already exists"));
+                    }
+                    return loadRepository.save(load);
+                });
     }
+    public Mono<Load> updateLoad(String loadId, Load load) {
 
-    public Mono<Load> updateLoad(String id, Load load) {
-
-        return loadRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Load not found")))
+        return loadRepository.findByLoadId(loadId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Load not found")))
                 .flatMap(existing -> {
-
                     existing.setGatewayId(load.getGatewayId());
                     existing.setLoadName(load.getLoadName());
                     existing.setLoadType(load.getLoadType());
-
                     return loadRepository.save(existing);
                 });
     }
 
-    public Mono<String> deleteLoad(String id) {
+    public Mono<String> deleteLoad(String loadId) {
 
-        return loadRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Load not found")))
+        return loadRepository.findByLoadId(loadId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Load not found")))
                 .flatMap(loadRepository::delete)
                 .thenReturn("Load Deleted Successfully");
     }
+
 }

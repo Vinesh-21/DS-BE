@@ -5,9 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 
 @Data
@@ -19,8 +23,16 @@ public class Load {
 
     @Id
     private String  id;
-    @Indexed
-    private String  gatewayId;
+
+    @Indexed(unique = true)
+    private String loadId;
     private String loadName;
     private LoadType loadType;
+    private String  gatewayId;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private  LocalDateTime updatedAt;
 }
