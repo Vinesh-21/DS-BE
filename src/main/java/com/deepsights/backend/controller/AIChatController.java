@@ -18,10 +18,9 @@ public class AIChatController {
     }
 
     @PostMapping("/chat")
-    public Mono<String> chat(@RequestBody String prompt, @RequestParam String conversationId) {
+    public String chat(@RequestBody String prompt, @RequestParam String conversationId) {
         System.out.println(prompt);
-        return Mono.fromCallable(()-> aiChatService.chat(conversationId,prompt))
-                .subscribeOn(Schedulers.boundedElastic());
+        return aiChatService.chat(conversationId,prompt);
 
     }
 }
