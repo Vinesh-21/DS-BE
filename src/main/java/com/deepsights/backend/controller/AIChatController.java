@@ -1,5 +1,6 @@
 package com.deepsights.backend.controller;
 
+import com.deepsights.backend.dto.ChatBotResponse;
 import com.deepsights.backend.service.AIChatService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -18,7 +19,7 @@ public class AIChatController {
     }
 
     @PostMapping("/chat")
-    public String chat(@RequestBody String prompt, @RequestParam String conversationId) {
+    public ChatBotResponse chat(@RequestBody String prompt, @RequestParam String conversationId) {
         System.out.println(prompt);
         return aiChatService.chat(conversationId,prompt);
 

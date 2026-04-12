@@ -1,5 +1,6 @@
 package com.deepsights.backend.service;
 
+import com.deepsights.backend.dto.ChatBotResponse;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -16,12 +17,12 @@ public class AIChatService {
         this.chatClient = chatClient;
     }
 
-    public String chat(String conversationId, String userPrompt){
+    public ChatBotResponse chat(String conversationId, String userPrompt){
 
         return chatClient.prompt()
                 .user(userPrompt)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
-                .content();
+                .entity(ChatBotResponse.class);
     }
 }
