@@ -1,5 +1,7 @@
 package com.deepsights.backend.tools;
 
+import com.deepsights.backend.dto.ChatBotResponse;
+import com.deepsights.backend.enums.ContentType;
 import com.deepsights.backend.exception.NotFoundException;
 import com.deepsights.backend.model.Gateway;
 import com.deepsights.backend.model.LoadReading;
@@ -38,8 +40,9 @@ Guidelines:
 
 - If no matching loadId can be determined, respond that the load was not found.
 """,returnDirect = true)
-    public List<LoadReading> getLoadReadingsByLoadId(String loadId){
-        return loadReadingService.getReadingsByLoadId(loadId).collectList().toFuture().join();
+    public ChatBotResponse getLoadReadingsByLoadId(String loadId){
+        List<LoadReading> loadReadings = loadReadingService.getReadingsByLoadId(loadId).collectList().toFuture().join();
+        return new ChatBotResponse(ContentType.JSONFORLOAD,null,null,loadReadings,null);
     }
 
 
@@ -61,11 +64,14 @@ Guidelines:
 """,
             returnDirect = true
     )
-    public List<MeterReading> getMeterReadingsByMeterId(String meterId){
-        return meterReadingService
+    public ChatBotResponse getMeterReadingsByMeterId(String meterId){
+        List<MeterReading> meterReadings= meterReadingService
                 .getReadingsByMeterId(meterId)
                 .collectList()
                 .toFuture()
                 .join();
+
+        return new ChatBotResponse(ContentType.JSONFORMETER,null,meterReadings,null,null);
     }
+
 }
