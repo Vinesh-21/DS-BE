@@ -8,12 +8,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.List;
 
-@JsonPropertyOrder({"contentType", "content","jsonContent","jsonContentMeter","jsonContentLoad","steps"})
+@JsonPropertyOrder({"contentType", "content","jsonContent","jsonContentMeter","jsonContentLoad","steps","code"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ChatBotResponse(
         ContentType contentType,
         String content,
         List<MeterReading> jsonContentMeter,
         List<LoadReading> jsonContentLoad,
-        List<GuideStep> steps
+        List<GuideStep> steps,
+        String code
 ) {}

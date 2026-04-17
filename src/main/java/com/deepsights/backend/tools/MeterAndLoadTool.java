@@ -42,7 +42,7 @@ Guidelines:
 """,returnDirect = true)
     public ChatBotResponse getLoadReadingsByLoadId(String loadId){
         List<LoadReading> loadReadings = loadReadingService.getReadingsByLoadId(loadId).collectList().toFuture().join();
-        return new ChatBotResponse(ContentType.JSONFORLOAD,null,null,loadReadings,null);
+        return new ChatBotResponse(ContentType.JSONFORLOAD,null,null,loadReadings,null,null);
     }
 
 
@@ -71,7 +71,7 @@ Guidelines:
                 .toFuture()
                 .join();
 
-        return new ChatBotResponse(ContentType.JSONFORMETER,null,meterReadings,null,null);
+        return new ChatBotResponse(ContentType.JSONFORMETER,null,meterReadings,null,null,null);
     }
 
 }

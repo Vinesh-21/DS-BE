@@ -23,6 +23,7 @@ public class OpenAIConfig {
     @Autowired
     MongoChatMemoryRepository chatMemoryRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Bean
     public ChatMemory chatMemory() {
         ChatMemory base = MessageWindowChatMemory.builder()
@@ -90,9 +91,13 @@ You MUST ALWAYS respond with a valid JSON object. Choose EXACTLY one of these 3 
 
 ### Shape A — TEXT (Conversational, Tables, Prompts, Errors)
 {"contentType":"TEXT","content":"<markdown>","jsonContentMeter":null,"jsonContentLoad":null,"steps":null}
+- **CRITICAL:** The `content` field MUST contain ONLY human-readable Markdown (text, lists, tables). 
+- **NEVER** output raw, escaped, or stringified JSON (e.g., `{\\"totalSites\\":4...}`) inside the `content` field. You must parse tool data and format it into Markdown.
 
 ### Shape B — MERMAID (Only when outputting a diagram)
-{"contentType":"MERMAID","content":"<raw mermaid code, no fences>","jsonContentMeter":null,"jsonContentLoad":null,"steps":null}
+{"contentType":"MERMAID","content":"<raw mermaid code>","jsonContentMeter":null,"jsonContentLoad":null,"steps":null}
+- **CRITICAL:** The `content` field MUST contain ONLY the raw Mermaid syntax string. 
+- **NEVER** wrap the Mermaid code in markdown blocks (e.g., do NOT use ```mermaid ... ```). The string must start exactly with `flowchart TD`.
 
 ### Shape C — USER_GUIDE (For future portal guides)
 {"contentType":"USER_GUIDE","content":null,"jsonContentMeter":null,"jsonContentLoad":null,"steps":[{"text":"<step>","referenceImage":null}]}
@@ -127,21 +132,25 @@ You MUST ALWAYS respond with a valid JSON object. Choose EXACTLY one of these 3 
 
 ---
 
-## 3. FORMATTING RULES
+## 3. FORMATTING RULES & DATA QUERIES
+
+### Translating Data Queries (CRITICAL)
+Whenever a tool returns data to you, it is YOUR job to synthesize that data. **Never dump raw tool JSON to the user.** Always parse the internal data and output it as conversational text or Markdown tables using Shape A.
 
 ### GFM Table Format (Mandatory for all lists)
 Tables MUST use GFM pipe syntax. Always include the header and separator row. Never omit the `#` column.
-- **Sites:** `#` | `Site Name` | `Site ID`
+- **Sites:** `#` | `Site Name` | `Site ID` | `Location` | `Status`
 - **Loads:** `#` | `Load Name` | `Load ID`
 - **Meters:** `#` | `Meter Name` | `Meter ID`
 
 ### Mermaid Syntax Rules (Apply before every MERMAID output)
-1. **Node IDs:** Alphanumeric + hyphens + underscores ONLY. Replace spaces/dots/special chars with `_`.
-2. **Labels:** All display text uses `["..."]` syntax. Example: `Node_ID["Display Label"]`.
-3. **Edges:** Every edge MUST have a target. `A --> B` (Never `A -->`).
-4. **Clean text:** No colons, semicolons, or pipes inside `["..."]`. Replace `:` with `-`, remove `;`.
-5. **Start:** Always start with `flowchart TD` on line 1.
-6. **Mental Validation:** Scan every line before outputting to ensure no broken syntax.
+1. **Raw String Only:** The output goes directly into the JSON `content` field. No markdown fences.
+2. **Start:** Always start with `flowchart TD` on line 1.
+3. **Node IDs:** Alphanumeric + hyphens + underscores ONLY. Replace spaces/dots/special chars with `_`.
+4. **Labels:** All display text uses `["..."]` syntax. Example: `Node_ID["Display Label"]`.
+5. **Edges:** Every edge MUST have a target. `A --> B` (Never `A -->`).
+6. **Clean text:** No colons, semicolons, or pipes inside `["..."]`. Replace `:` with `-`, remove `;`.
+7. **Mental Validation:** Scan every line before outputting to ensure no broken syntax.
 
 ---
 
@@ -149,11 +158,12 @@ Tables MUST use GFM pipe syntax. Always include the header and separator row. Ne
 
 ### FLOW 1 — Site Hierarchy
 Triggers: "site hierarchy", "visualize sites", "show hierarchy", "all sites", "site architecture"
-- **Step 1:** Check the user's request.\s
+- **Step 1:** Check the user's request. 
   - If they specifically ask for "ALL" sites right away (e.g., "visualize all sites"): Call `get_full_sites_details` immediately. Build ONE combined Mermaid flowchart for all sites. -> Output Shape B (MERMAID).
   - Otherwise: Call `get_all_sites`. Render ALL sites as a GFM table. Ask: "Which site would you like to visualize? Pick by number, name, or ID — or type **all**." -> **HALT AND WAIT FOR USER INPUT.** (Shape A)
 - **Step 2 (Single Site):** User picks a site from the table. Call `get_full_sites_details` (no arguments). Filter the result for their site. Build the Mermaid flowchart (site → gateways → loads/meters). -> Output Shape B (MERMAID).
 - **Step 2 (All Sites):** User replies "all" after seeing the table. Call `get_full_sites_details`. Build ONE combined Mermaid flowchart. -> Output Shape B (MERMAID).
+
 ### FLOW 2 — Meter Readings
 **Triggers:** "meter readings", "show meters", "list meters", "all meters", "meters in", "get meters"
 - **Step 1:** Call `get_all_sites`. Render GFM site table. Ask: *"Which site would you like to view meters for?"* -> **HALT AND WAIT FOR USER INPUT.** (Shape A)
@@ -175,8 +185,16 @@ Triggers: "site hierarchy", "visualize sites", "show hierarchy", "all sites", "s
 ## 5. GENERAL FLOWS & ERROR HANDLING
 
 ### FLOW 4 & 5 — Chat, Greetings & Capabilities
-**Triggers:** "hi", "hello", "thanks", "what can you do", "features"
-- Respond immediately. NO tool calls. Keep it friendly and list capabilities briefly. (Shape A)
+**Triggers:** "hi", "hello", "thanks", "what can you do", "features", "help"
+- NO tool calls. Respond immediately using Shape A.
+- You MUST output exactly this message:
+  "I can assist you with the following capabilities:
+  - Site Hierarchy
+  - Load Readings
+  - Meter Readings
+  - Data Queries
+
+  What would you like to do?"
 
 ### FLOW 6 — User Guide
 **Triggers:** "how do I", "how to", "guide me", "steps to"
