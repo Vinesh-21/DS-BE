@@ -4,6 +4,7 @@ import com.deepsights.backend.dto.ChatBotResponse;
 import com.deepsights.backend.enums.ContentType;
 import com.deepsights.backend.tools.MeterAndLoadTool;
 import com.deepsights.backend.tools.SiteTool;
+import com.deepsights.backend.tools.UserGuideTool;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -81,7 +82,7 @@ public class OpenAIConfig {
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder, ChatMemory chatMemory,
-                                 SiteTool siteTool, MeterAndLoadTool meterAndLoadTool) {
+                                 SiteTool siteTool, MeterAndLoadTool meterAndLoadTool, UserGuideTool userGuideTool) {
 
         return builder.defaultSystem("""
 You are the IoT Factory AI Assistant. You guide users through site hierarchies, meter readings, and load readings.
@@ -196,16 +197,43 @@ Triggers: "site hierarchy", "visualize sites", "show hierarchy", "all sites", "s
 
   What would you like to do?"
 
-### FLOW 6 — User Guide
-**Triggers:** "how do I", "how to", "guide me", "steps to"
-- NO tool calls. Say: *"📖 Step-by-step portal guides are coming soon! I can currently help with **Site Hierarchy**, **Load Readings**, and **Meter Readings**."* (Shape A)
+### FLOW 6 — User Guide (Portal How-To Instructions)
+Triggers: "how do I", "how to", "guide me", "guide me to", "steps to",
+          "help me with", "where do I", "how can I", "show me how"
 
+- These are PORTAL USAGE questions ONLY (e.g. "how do I add a site", "how to create a gateway").
+- Do NOT use this flow for data queries, greetings, or capability questions.
+
+Step 1 — Call `search_user_guide` immediately, passing the user's full question as the query.
+          Write NOTHING before the tool result arrives.
+
+Step 2 — If the tool returns "NO_GUIDE_FOUND":
+  Output Shape A: "📖 I couldn't find guide steps for that. Try rephrasing, or ask me about
+  **Site Hierarchy**, **Load Readings**, or **Meter Readings**."
+
+Step 3 — If the tool returns guide content:
+  Parse the result. Each chunk is separated by `---` and follows this format:
+    STEP_TEXT: <instruction text>
+    STEP_IMAGE: <image path or null>
+
+  Map each chunk into a step object: { "text": "<STEP_TEXT value>", "referenceImage": "<STEP_IMAGE value or null>" }
+  Set referenceImage to null if the value is the string "null".
+
+  Output Shape C (USER_GUIDE):
+  {
+    "contentType": "USER_GUIDE",
+    "content": null,
+    "jsonContentMeter": null,
+    "jsonContentLoad": null,
+    "steps": [ ...mapped steps in order... ]
+  }
+  
 ### ERROR HANDLING & FLOW RESET (HIGHEST PRIORITY)
 - **Reset:** If the user sends ANY flow trigger mid-conversation (e.g., halfway through picking a meter, they say "show site hierarchy"), IMMEDIATELY abandon the current flow and start the new one from Step 1.
 - **Bad Input:** If you cannot match the user's choice to a table entry, output Shape A: *"I couldn't match **'[input]'** to any entry. Please pick by number, name, or ID:"* and re-show the table.
 - **Tool Fail / Empty:** Output Shape A: *"❌ Unable to retrieve data. Please try again."*
 """)
-                .defaultTools(siteTool, meterAndLoadTool)
+                .defaultTools(siteTool, meterAndLoadTool,userGuideTool)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build()
                 )

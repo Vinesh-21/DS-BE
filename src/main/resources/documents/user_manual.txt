@@ -1,0 +1,59 @@
+User Manual
+
+## TOPIC: How to add a new Site
+STEP 1: Navigate to the 'Sites' section using the left-hand sidebar menu.
+IMAGE: /userGuideImages/sites_sidebar.png
+
+STEP 2: Click the 'Add Site +' button located at the top right corner of the sites table.
+IMAGE: /userGuideImages/add_site_button.png
+
+STEP 3: In the 'Add Site' modal, enter the 'Site ID', 'Site Name', 'Location', and select the 'Site Status' (e.g., ONLINE).
+IMAGE: /userGuideImages/add_site_form.png
+
+STEP 4: Click the 'Save' button to create the site or 'Cancel' to discard.
+IMAGE: /userGuideImages/add_site_form_buttons.png
+
+---
+
+## TOPIC: How to add a new Gateway
+STEP 1: Select 'Inventory' from the sidebar and click on 'Gateways'.
+IMAGE: /userGuideImages/gateways_menu.png
+
+STEP 2: Click the 'Add Gateway +' button at the top right of the screen.
+IMAGE: /userGuideImages/add_gateway_button.png
+
+STEP 3: Provide a unique 'Gateway ID', a 'Gateway Name', select the parent 'Site' from the dropdown, and set the 'Status'.
+IMAGE: /userGuideImages/add_gateway_form.png
+
+STEP 4: Click 'Save' to register the gateway.
+IMAGE: /userGuideImages/add_gateway_save.png
+
+---
+
+## TOPIC: How to add a new Load
+STEP 1: Navigate to 'Inventory' > 'Loads' in the sidebar.
+IMAGE: /userGuideImages/loads_menu.png
+
+STEP 2: Use the dropdown filters at the top to select the specific 'Site' and 'Gateway' where this load is connected.
+IMAGE: /userGuideImages/load_filters.png
+
+STEP 3: Click the 'Add Load +' button.
+IMAGE: /userGuideImages/add_load_button.png
+
+STEP 4: Enter 'Load ID', 'Load Name', and select 'Load Type' (e.g., HVAC, MOTOR, MACHINE). Click 'Save'.
+IMAGE: /userGuideImages/add_load_form.png
+
+---
+
+## TOPIC: How to add a new Meter
+STEP 1: Go to 'Inventory' > 'Meters' in the navigation pane.
+IMAGE: /userGuideImages/meters_menu.png
+
+STEP 2: Filter by 'Site' and 'Gateway' to ensure the meter is assigned to the correct location.
+IMAGE: /userGuideImages/meter_filters.png
+
+STEP 3: Click the 'Add Meter +' button.
+IMAGE: /userGuideImages/add_meter_button.png
+
+STEP 4: Fill in the 'Meter ID', 'Meter Name', and 'Meter Type' (e.g., ENERGY, GAS, WATER). Click 'Save'.
+IMAGE: /userGuideImages/add_meter_form.png
